@@ -14,6 +14,7 @@ on:
         required: false
         default: false
         description: "Set to true to have this workflow force verbose logging, useful for catching build failures in logging code."
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -40,6 +41,11 @@ jobs:
       fail-fast: true
     steps:
       - uses: actions/checkout@v4
+      - name: Print config before changes
+        uses: mikefarah/yq@v4
+        with:
+          cmd: >
+            yq -P '.' build-yaml/econet-${{ matrix.appliance.shorthand }}-${{ matrix.platform }}.yaml
       - name: Force Manifest to Build Local Code
         uses: mikefarah/yq@v4
         with:
@@ -71,6 +77,11 @@ jobs:
               .substitutions.logger_level = "VERY_VERBOSE"
             '
             build-yaml/econet-${{ matrix.appliance.shorthand }}-${{ matrix.platform }}.yaml
+      - name: Print config after changes
+        uses: mikefarah/yq@v4
+        with:
+          cmd: >
+            yq -P '.' build-yaml/econet-${{ matrix.appliance.shorthand }}-${{ matrix.platform }}.yaml
       - name: Build Firmware
         id: esphome-build
         uses: esphome/build-action@v2
